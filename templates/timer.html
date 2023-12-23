@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @font-face {
+            font-family: 'JetBrains Mono';
+            src: url('{{ url_for('static', filename='fonts/JetBrainsMono-Regular.eot') }}');
+            src: url('{{ url_for('static', filename='fonts/JetBrainsMono-Regular.eot?#iefix') }}') format('embedded-opentype'),
+                url('{{ url_for('static', filename='fonts/JetBrainsMono-Regular.woff2') }}') format('woff2'),
+                url('{{ url_for('static', filename='fonts/JetBrainsMono-Regular.woff') }}') format('woff'),
+                url('{{ url_for('static', filename='fonts/JetBrainsMono-Regular.svg#JetBrainsMono-Regular') }}') format('svg');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body.light {
+            background-color: #FAFAF5; /* slightly warmer white */
+            color: black;
+        }
+
+        body.dark {
+            background-color: black;
+            color: #FAFAF5;
+        }
+        
+        #container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #timer {
+            font-family: 'JetBrains Mono';
+            font-size: 15vw;
+        }
+
+
+
+        .blink {
+            animation: blinker 1s step-start infinite;
+        }
+
+        .flash {
+            animation: flasher 1s step-start infinite;
+        }
+
+        @keyframes blinker {
+            50% {
+                color: red;
+            }
+        }
+
+        @keyframes flasher {
+            50% {
+                visibility: hidden;
+            }
+        }
+    </style>
+    <title>Timer App</title>
+</head>
+<body id="body" class="light">
+    <div id="container">
+        <div id="timer"></div>
+    </div>
+    <script>
+        shouldFlash = false;
+        hasFlashed = false;
+        paused = false;
+        totalSeconds = {{ seconds }};
+
+        function formatTime(time) {
+            return time.toString().padStart(2, '0');
+        }
+        function down() {
+            var hours = Math.floor(totalSeconds / 3600);
+            var minutes = Math.floor((totalSeconds % 3600) / 60);
+            var seconds = totalSeconds % 60;
+
+            document.getElementById('timer').innerHTML = formatTime(hours) + ':' + formatTime(minutes) + ':' + formatTime(seconds);
+
+            if (totalSeconds <= 0) {
+                shouldFlash = true; // Toggle flashing only when the timer reaches zero
+                hasFlashed = true;
+            }
+        }
+        function flashElement(elementId) {
+            var element = document.getElementById(elementId);
+            
+            if (element) {
+                element.style.visibility = 'hidden';
+                setTimeout(function() {
+                    element.style.visibility = 'visible';
+                }, 500);
+            }
+        }
+
+        function startTimer() {
+            paused = false;
+            countdown = setInterval(function () {
+                down();
+                if (totalSeconds > 0) {
+                    totalSeconds--;
+                } else {
+                    clearInterval(countdown);
+            }}, 1000);
+        }
+
+        function pauseTimer() {
+            paused = true;
+            clearInterval(countdown);
+        }
+
+        interval = setInterval(function () {
+            if (shouldFlash) {
+                    document.getElementById("timer").classList.add("blink");
+                } else {
+                    document.getElementById("timer").classList.remove("blink");
+                    console.log("hey")
+                    if (hasFlashed) {
+                        clearInterval(interval);
+                    }
+                }
+        }, 100);
+
+        document.addEventListener("click", function() {
+            shouldFlash = false; // Stop flashing on click
+        });
+
+        document.addEventListener("keydown", function(event) {
+            if (event.key === 'd') {
+                var body = document.getElementById("body");
+                console.log(body.classList);
+                if (body.classList.contains("light")) {
+                    body.classList.remove("light")
+                    body.classList.add("dark")
+                } else {
+                    body.classList.remove("dark")
+                    body.classList.add("light")
+                }
+            } else if (event.key === 's') {
+                shouldFlash = false;
+            } else if (event.key === 'p') {
+                if (paused) {
+                    document.getElementById("timer").classList.remove("flash");
+                    startTimer();
+                } else {
+                    document.getElementById("timer").classList.add("flash");
+                    pauseTimer();
+                }
+            }
+        });
+
+        down();
+        totalSeconds--;
+        startTimer();
+    </script>
+</body>
+</html>
