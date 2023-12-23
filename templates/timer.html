@@ -26,18 +26,32 @@
             color: #FAFAF5;
         }
         
+        body {
+            margin: 0;
+        }
+
         #container {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+
+        #keybinds {
+            font-family: 'Jetbrains Mono';
+            font-size: 1.5vw;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            transform: translateX(-30%);
         }
 
         #timer {
             font-family: 'JetBrains Mono';
             font-size: 15vw;
         }
-
 
 
         .blink {
@@ -63,13 +77,43 @@
     <title>Timer App</title>
 </head>
 <body id="body" class="light">
+    <div id="keybinds">
+        <pre>
+            p - toggle pause
+            s - stop flash
+            d - toggle dark mode
+        </pre>
+        
+    </div>
     <div id="container">
         <div id="timer"></div>
     </div>
     <script>
-        shouldFlash = false;
+        var canToggleMode = true;
+
+        function toggleDarkMode() {
+            if (!canToggleMode) return;
+            
+            canToggleMode = false;
+            
+            setTimeout(function () {
+                canToggleMode = true;
+            }, 250);
+
+            var body = document.getElementById("body");
+
+            if (body.classList.contains("light")) {
+                body.classList.remove("light");
+                body.classList.add("dark");
+            } else {
+                body.classList.remove("dark");
+                body.classList.add("light");
+            }
+        }
+
+                shouldFlash = false;
         hasFlashed = false;
-        paused = false;
+        paused = true;
         totalSeconds = {{ seconds }};
 
         function formatTime(time) {
@@ -132,15 +176,7 @@
 
         document.addEventListener("keydown", function(event) {
             if (event.key === 'd') {
-                var body = document.getElementById("body");
-                console.log(body.classList);
-                if (body.classList.contains("light")) {
-                    body.classList.remove("light")
-                    body.classList.add("dark")
-                } else {
-                    body.classList.remove("dark")
-                    body.classList.add("light")
-                }
+                toggleDarkMode();
             } else if (event.key === 's') {
                 shouldFlash = false;
             } else if (event.key === 'p') {
@@ -156,7 +192,7 @@
 
         down();
         totalSeconds--;
-        startTimer();
+        // startTimer();
     </script>
 </body>
 </html>
